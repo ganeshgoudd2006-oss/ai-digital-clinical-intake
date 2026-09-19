@@ -20,6 +20,7 @@
   --intake-surface: #ffffff;
   --intake-surface-muted: #f3f9fb;
   --intake-border: #d5e7ee;
+  --intake-error: #b42318;
   --intake-shadow:
     rgba(10, 74, 96, 0.1) 0 18px 36px -26px, rgba(10, 74, 96, 0.08) 0 2px 8px -5px;
 
@@ -48,6 +49,7 @@
     --intake-surface: #17222a;
     --intake-surface-muted: #141d24;
     --intake-border: #2a3b45;
+    --intake-error: #ff9b85;
     --intake-shadow: rgba(0, 0, 0, 0.55) 0 18px 36px -26px;
   }
 }
@@ -192,15 +194,173 @@
   opacity: 0.85;
 }
 
-.intake-welcome__status {
+/* ---------- Step label and form screens ---------- */
+
+.intake-welcome__eyebrow {
   margin: 0;
-  padding: 12px 16px;
-  border: 1px solid var(--intake-border);
-  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--intake-primary);
+}
+
+.intake-welcome__title--form {
+  font-size: clamp(1.6rem, 3.6vw, 2.2rem);
+}
+
+/* ---------- Patient information form ---------- */
+
+.intake-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(14px, 2vw, 20px);
+  width: 100%;
+  max-width: 720px;
+  margin-top: clamp(4px, 1.5vw, 12px);
+  text-align: left;
+}
+
+.intake-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.intake-form__label {
   font-size: 14.5px;
-  line-height: 1.5;
+  font-weight: 600;
+  color: var(--intake-heading);
+}
+
+.intake-form__input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--intake-border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--intake-heading);
+  background: var(--intake-surface);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.intake-form__input::placeholder {
+  color: var(--intake-text);
+  opacity: 0.7;
+}
+
+.intake-form__input:hover {
+  border-color: var(--intake-primary);
+}
+
+.intake-form__input:focus-visible {
+  outline: 3px solid var(--intake-primary);
+  outline-offset: 1px;
+}
+
+.intake-form__select {
+  cursor: pointer;
+}
+
+.intake-form__input[aria-invalid='true'] {
+  border-color: var(--intake-error);
+  border-width: 2px;
+}
+
+.intake-form__error {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--intake-error);
+}
+
+.intake-form__buttons {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.intake-welcome__cta--secondary {
   color: var(--intake-primary);
   background: var(--intake-surface);
+  border-color: var(--intake-border);
+  box-shadow: none;
+}
+
+.intake-welcome__cta--secondary:hover {
+  color: var(--intake-primary-strong);
+  background: var(--intake-soft);
+}
+
+/* Two fields side by side once there is room for them. */
+@media (min-width: 640px) {
+  .intake-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .intake-form__field--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Summary of collected information ---------- */
+
+.intake-summary {
+  width: 100%;
+  max-width: 720px;
+  padding: clamp(18px, 2.5vw, 24px);
+  border: 1px solid var(--intake-border);
+  border-radius: 12px;
+  background: var(--intake-surface);
+  text-align: left;
+}
+
+.intake-summary__heading {
+  margin: 0 0 14px;
+  font-family: var(--heading);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--intake-heading);
+}
+
+.intake-summary__list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.intake-summary__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--intake-border);
+}
+
+.intake-summary__row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.intake-summary__row dt {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--intake-heading);
+}
+
+.intake-summary__row dd {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--intake-text);
 }
 
 /* ---------- "How it works" steps ---------- */
@@ -288,11 +448,17 @@
   .intake-welcome__hint {
     text-align: center;
   }
+
+  .intake-form__buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .intake-welcome__cta,
-  .intake-welcome__step {
+  .intake-welcome__step,
+  .intake-form__input {
     transition: none;
   }
 
