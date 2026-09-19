@@ -1,0 +1,303 @@
+/* Welcome page for the AI-Powered Digital Clinical Intake Platform. */
+
+/* The Vite starter centres a bordered, fixed-width column in #root. The welcome
+   page is a full-width layout, so that decorative frame is removed here.
+   App.css is imported after index.css, so these declarations win. */
+#root {
+  width: 100%;
+  border-inline: none;
+}
+
+.intake-welcome {
+  /* Healthcare palette (light) */
+  --intake-bg: radial-gradient(115% 100% at 50% 0%, #e6f5f8 0%, #f6fbfc 50%, #ffffff 100%);
+  --intake-heading: #0b2e3d;
+  --intake-text: #4d5f6a;
+  --intake-primary: #0e7490;
+  --intake-primary-strong: #0b5a70;
+  --intake-on-primary: #ffffff;
+  --intake-soft: #e5f4f7;
+  --intake-surface: #ffffff;
+  --intake-surface-muted: #f3f9fb;
+  --intake-border: #d5e7ee;
+  --intake-shadow:
+    rgba(10, 74, 96, 0.1) 0 18px 36px -26px, rgba(10, 74, 96, 0.08) 0 2px 8px -5px;
+
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 5vw, 48px);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 100svh;
+  padding: clamp(24px, 5vw, 40px) clamp(18px, 5vw, 64px);
+  text-align: left;
+  color: var(--intake-text);
+  background: var(--intake-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  .intake-welcome {
+    --intake-bg: radial-gradient(115% 100% at 50% 0%, #11303a 0%, #0f1920 55%, #14181e 100%);
+    --intake-heading: #eef7fa;
+    --intake-text: #a9bec7;
+    --intake-primary: #4cc4d4;
+    --intake-primary-strong: #74d8e4;
+    --intake-on-primary: #06242b;
+    --intake-soft: rgba(76, 196, 212, 0.16);
+    --intake-surface: #17222a;
+    --intake-surface-muted: #141d24;
+    --intake-border: #2a3b45;
+    --intake-shadow: rgba(0, 0, 0, 0.55) 0 18px 36px -26px;
+  }
+}
+
+/* ---------- Header ---------- */
+
+.intake-welcome__topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.intake-welcome__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intake-welcome__brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: var(--intake-on-primary);
+  background: var(--intake-primary);
+  box-shadow: var(--intake-shadow);
+}
+
+.intake-welcome__brand-mark svg {
+  width: 18px;
+  height: 18px;
+}
+
+.intake-welcome__brand-name {
+  font-family: var(--heading);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--intake-heading);
+}
+
+.intake-welcome__badge {
+  margin: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--intake-border);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--intake-primary);
+  background: var(--intake-soft);
+}
+
+/* ---------- Main content ---------- */
+
+.intake-welcome__main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2.5vw, 24px);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.intake-welcome__title {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: clamp(1.85rem, 5vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  color: var(--intake-heading);
+  text-wrap: balance;
+}
+
+.intake-welcome__description {
+  margin: 0;
+  max-width: 58ch;
+  font-size: clamp(1rem, 2.2vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--intake-text);
+}
+
+/* ---------- Call to action ---------- */
+
+.intake-welcome__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 clamp(8px, 2vw, 18px);
+}
+
+.intake-welcome__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 15px 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--intake-on-primary);
+  background: var(--intake-primary);
+  box-shadow: var(--intake-shadow);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.intake-welcome__cta:hover {
+  background: var(--intake-primary-strong);
+  transform: translateY(-1px);
+}
+
+.intake-welcome__cta:active {
+  transform: translateY(0);
+}
+
+.intake-welcome__cta:focus-visible {
+  outline: 3px solid var(--intake-primary);
+  outline-offset: 3px;
+}
+
+.intake-welcome__hint {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--intake-text);
+  opacity: 0.85;
+}
+
+.intake-welcome__status {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--intake-border);
+  border-radius: 8px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--intake-primary);
+  background: var(--intake-surface);
+}
+
+/* ---------- "How it works" steps ---------- */
+
+.intake-welcome__steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(14px, 2vw, 20px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intake-welcome__step {
+  padding: clamp(18px, 2.5vw, 24px);
+  border: 1px solid var(--intake-border);
+  border-radius: 12px;
+  background: var(--intake-surface);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.intake-welcome__step:hover {
+  border-color: var(--intake-primary);
+  box-shadow: var(--intake-shadow);
+}
+
+.intake-welcome__step-title {
+  margin: 0 0 8px;
+  font-family: var(--heading);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: var(--intake-heading);
+}
+
+.intake-welcome__step-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--intake-text);
+}
+
+/* ---------- Footer ---------- */
+
+.intake-welcome__footer {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-top: clamp(16px, 2.5vw, 24px);
+  border-top: 1px solid var(--intake-border);
+}
+
+.intake-welcome__footer p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--intake-text);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 560px) {
+  .intake-welcome {
+    padding: 22px 16px 28px;
+  }
+
+  .intake-welcome__badge {
+    padding: 5px 12px;
+    font-size: 11.5px;
+  }
+
+  .intake-welcome__actions {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .intake-welcome__cta {
+    width: 100%;
+    padding: 15px 20px;
+  }
+
+  .intake-welcome__hint {
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intake-welcome__cta,
+  .intake-welcome__step {
+    transition: none;
+  }
+
+  .intake-welcome__cta:hover,
+  .intake-welcome__cta:active {
+    transform: none;
+  }
+}
