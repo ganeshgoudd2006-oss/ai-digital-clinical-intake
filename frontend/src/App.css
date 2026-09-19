@@ -279,6 +279,85 @@
   color: var(--intake-error);
 }
 
+/* Radio option groups, used for the symptom questions. */
+.intake-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.intake-form__legend {
+  padding: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--intake-heading);
+}
+
+.intake-form__options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.intake-form__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--intake-border);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--intake-heading);
+  background: var(--intake-surface);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.intake-form__option:hover {
+  border-color: var(--intake-primary);
+  background: var(--intake-soft);
+}
+
+.intake-form__option input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--intake-primary);
+  cursor: pointer;
+}
+
+.intake-form__option:has(input:checked) {
+  border-color: var(--intake-primary);
+  background: var(--intake-soft);
+  font-weight: 600;
+}
+
+.intake-form__option:has(input:focus-visible) {
+  outline: 3px solid var(--intake-primary);
+  outline-offset: 2px;
+}
+
+.intake-form__textarea {
+  min-height: 120px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.intake-form__hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--intake-text);
+  opacity: 0.85;
+}
+
 .intake-form__buttons {
   grid-column: 1 / -1;
   display: flex;
@@ -307,6 +386,10 @@
 
   .intake-form__field--wide {
     grid-column: 1 / -1;
+  }
+
+  .intake-form__options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -349,6 +432,12 @@
 .intake-summary__row:last-child {
   padding-bottom: 0;
   border-bottom: none;
+}
+
+/* Long answers (for example the symptom description) go below their label. */
+.intake-summary__row--stacked {
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .intake-summary__row dt {
@@ -458,7 +547,8 @@
 @media (prefers-reduced-motion: reduce) {
   .intake-welcome__cta,
   .intake-welcome__step,
-  .intake-form__input {
+  .intake-form__input,
+  .intake-form__option {
     transition: none;
   }
 

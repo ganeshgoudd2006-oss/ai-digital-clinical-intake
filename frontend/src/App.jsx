@@ -22,10 +22,11 @@ const intakeSteps = [
   },
 ]
 
-// Names of the three screens in the intake flow.
+// Names of the intake screens in the flow.
 const WELCOME_SCREEN = 'welcome'
 const PATIENT_INFO_SCREEN = 'patientInfo'
 const SYMPTOMS_SCREEN = 'symptoms'
+const AI_FOLLOWUP_SCREEN = 'aiFollowup'
 
 // Starting values for the patient information form.
 const emptyPatientInfo = {
@@ -33,6 +34,28 @@ const emptyPatientInfo = {
   age: '',
   gender: '',
   phone: '',
+}
+
+// Options for the symptom questions.
+const mainConcernOptions = [
+  'Fever',
+  'Headache',
+  'Stomach pain',
+  'Cough / cold',
+  'General weakness',
+  'Other',
+]
+
+const onsetOptions = ['Today', '1–2 days ago', '3–7 days ago', 'More than a week ago']
+
+const severityOptions = ['Mild', 'Moderate', 'Severe']
+
+// Starting values for the symptom form.
+const emptySymptoms = {
+  mainConcern: '',
+  startedWhen: '',
+  severity: '',
+  description: '',
 }
 
 function App() {
@@ -76,6 +99,45 @@ function App() {
     }
 
     setScreen(SYMPTOMS_SCREEN)
+  }
+
+  // The values selected or typed into the symptom form.
+  const [symptoms, setSymptoms] = useState(emptySymptoms)
+
+  // Validation messages for the symptom form, keyed by field name.
+  const [symptomErrors, setSymptomErrors] = useState({})
+
+  // Runs on every keystroke or selection inside the symptom form.
+  function handleSymptomsChange(event) {
+    const { name, value } = event.target
+
+    setSymptoms((previousSymptoms) => ({ ...previousSymptoms, [name]: value }))
+
+    // Changing a field clears its old error message.
+    setSymptomErrors((previousErrors) => ({ ...previousErrors, [name]: '' }))
+  }
+
+  // Runs when the symptom form is submitted (Continue button).
+  function handleSymptomsSubmit(event) {
+    event.preventDefault()
+
+    const nextErrors = {}
+
+    if (symptoms.mainConcern === '') {
+      nextErrors.mainConcern = 'Please choose your main concern.'
+    }
+
+    if (symptoms.description.trim() === '') {
+      nextErrors.description = 'Please describe your symptoms.'
+    }
+
+    setSymptomErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
+    setScreen(AI_FOLLOWUP_SCREEN)
   }
 
   return (
@@ -136,7 +198,7 @@ function App() {
 
       {screen === PATIENT_INFO_SCREEN && (
         <main className="intake-welcome__main">
-          <p className="intake-welcome__eyebrow">Step 1 of 2</p>
+          <p className="intake-welcome__eyebrow">Step 1 of 3</p>
 
           <h1 className="intake-welcome__title intake-welcome__title--form">
             Patient information
@@ -252,15 +314,142 @@ function App() {
 
       {screen === SYMPTOMS_SCREEN && (
         <main className="intake-welcome__main">
-          <p className="intake-welcome__eyebrow">Step 2 of 2</p>
+          <p className="intake-welcome__eyebrow">Step 2 of 3</p>
 
           <h1 className="intake-welcome__title intake-welcome__title--form">
             Symptoms
           </h1>
 
           <p className="intake-welcome__description">
-            This screen is a placeholder for now. The symptom questions will be added
-            here in the next step of the intake flow.
+            Tell us what you are experiencing so your care team can prepare for the
+            consultation. This is a summary of your symptoms only, not a diagnosis.
+          </p>
+
+          <form className="intake-form" onSubmit={handleSymptomsSubmit} noValidate>
+            <div className="intake-form__field intake-form__field--wide">
+              <label className="intake-form__label" htmlFor="mainConcern">
+                What is your main concern? <span aria-hidden="true">*</span>
+              </label>
+              <select
+                id="mainConcern"
+                name="mainConcern"
+                className="intake-form__input intake-form__select"
+                value={symptoms.mainConcern}
+                onChange={handleSymptomsChange}
+                required
+                aria-invalid={symptomErrors.mainConcern ? 'true' : 'false'}
+                aria-describedby={
+                  symptomErrors.mainConcern ? 'mainConcern-error' : undefined
+                }
+              >
+                <option value="">Select a concern</option>
+                {mainConcernOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {symptomErrors.mainConcern && (
+                <p className="intake-form__error" id="mainConcern-error" role="alert">
+                  {symptomErrors.mainConcern}
+                </p>
+              )}
+            </div>
+
+            <fieldset className="intake-form__group intake-form__field--wide">
+              <legend className="intake-form__legend">When did it start?</legend>
+              <div className="intake-form__options">
+                {onsetOptions.map((option) => (
+                  <label key={option} className="intake-form__option">
+                    <input
+                      type="radio"
+                      name="startedWhen"
+                      value={option}
+                      checked={symptoms.startedWhen === option}
+                      onChange={handleSymptomsChange}
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="intake-form__group intake-form__field--wide">
+              <legend className="intake-form__legend">How severe is it?</legend>
+              <div className="intake-form__options">
+                {severityOptions.map((option) => (
+                  <label key={option} className="intake-form__option">
+                    <input
+                      type="radio"
+                      name="severity"
+                      value={option}
+                      checked={symptoms.severity === option}
+                      onChange={handleSymptomsChange}
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="intake-form__field intake-form__field--wide">
+              <label className="intake-form__label" htmlFor="description">
+                Tell us more <span aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows="5"
+                className="intake-form__input intake-form__textarea"
+                value={symptoms.description}
+                onChange={handleSymptomsChange}
+                placeholder="Describe how you feel in your own words"
+                required
+                aria-invalid={symptomErrors.description ? 'true' : 'false'}
+                aria-describedby={
+                  symptomErrors.description
+                    ? 'description-error'
+                    : 'description-hint'
+                }
+              />
+              <p className="intake-form__hint" id="description-hint">
+                A short description is enough. You can discuss the details during your
+                consultation.
+              </p>
+              {symptomErrors.description && (
+                <p className="intake-form__error" id="description-error" role="alert">
+                  {symptomErrors.description}
+                </p>
+              )}
+            </div>
+
+            <div className="intake-form__buttons">
+              <button
+                type="button"
+                className="intake-welcome__cta intake-welcome__cta--secondary"
+                onClick={() => setScreen(PATIENT_INFO_SCREEN)}
+              >
+                Back
+              </button>
+              <button type="submit" className="intake-welcome__cta">
+                Continue
+              </button>
+            </div>
+          </form>
+        </main>
+      )}
+
+      {screen === AI_FOLLOWUP_SCREEN && (
+        <main className="intake-welcome__main">
+          <p className="intake-welcome__eyebrow">Step 3 of 3</p>
+
+          <h1 className="intake-welcome__title intake-welcome__title--form">
+            AI Follow-up Questions
+          </h1>
+
+          <p className="intake-welcome__description">
+            This screen is a placeholder for now. Follow-up questions based on the
+            information you provided will appear here in a later step.
           </p>
 
           <section className="intake-summary" aria-labelledby="summary-heading">
@@ -284,6 +473,22 @@ function App() {
                 <dt>Phone Number</dt>
                 <dd>{patientInfo.phone || 'Not provided'}</dd>
               </div>
+              <div className="intake-summary__row">
+                <dt>Main concern</dt>
+                <dd>{symptoms.mainConcern || 'Not provided'}</dd>
+              </div>
+              <div className="intake-summary__row">
+                <dt>Started</dt>
+                <dd>{symptoms.startedWhen || 'Not provided'}</dd>
+              </div>
+              <div className="intake-summary__row">
+                <dt>Severity</dt>
+                <dd>{symptoms.severity || 'Not provided'}</dd>
+              </div>
+              <div className="intake-summary__row intake-summary__row--stacked">
+                <dt>Description</dt>
+                <dd>{symptoms.description}</dd>
+              </div>
             </dl>
           </section>
 
@@ -291,7 +496,7 @@ function App() {
             <button
               type="button"
               className="intake-welcome__cta intake-welcome__cta--secondary"
-              onClick={() => setScreen(PATIENT_INFO_SCREEN)}
+              onClick={() => setScreen(SYMPTOMS_SCREEN)}
             >
               Back
             </button>
