@@ -58,6 +58,62 @@ const emptySymptoms = {
   description: '',
 }
 
+// Backend API endpoint. Only the URL lives in the frontend - no credentials.
+const PATIENTS_API_URL = 'http://localhost:5000/api/patients'
+
+// The backend Patient model expects these field names, so the two forms are
+// mapped into one record here.
+function buildPatientPayload(patientInfo, symptoms) {
+  return {
+    name: patientInfo.fullName.trim(),
+    age: Number(patientInfo.age),
+    gender: patientInfo.gender,
+    phone: patientInfo.phone.trim(),
+    mainConcern: symptoms.mainConcern,
+    duration: symptoms.startedWhen,
+    severity: symptoms.severity,
+    description: symptoms.description.trim(),
+  }
+}
+
+// Sends the completed intake to the backend and reports what happened.
+async function sendPatientIntake(payload) {
+  let response
+
+  try {
+    response = await fetch(PATIENTS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    // fetch only rejects when the request could not be sent at all.
+    return {
+      ok: false,
+      message: `Could not reach the backend at ${PATIENTS_API_URL}. Please make sure the backend server is running and try again.`,
+    }
+  }
+
+  // Read the JSON answer when there is one, without crashing if there is not.
+  const data = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      message:
+        (data && data.message) ||
+        `The backend returned status ${response.status}. Please try again.`,
+    }
+  }
+
+  return {
+    ok: true,
+    message: (data && data.message) || 'Patient intake saved successfully.',
+  }
+}
+
 function App() {
   // Which screen is visible right now.
   const [screen, setScreen] = useState(WELCOME_SCREEN)
@@ -90,6 +146,16 @@ function App() {
 
     if (patientInfo.age.trim() === '') {
       nextErrors.age = 'Please enter your age.'
+    } else if (
+      Number.isNaN(Number(patientInfo.age)) ||
+      Number(patientInfo.age) < 0 ||
+      Number(patientInfo.age) > 120
+    ) {
+      nextErrors.age = 'Please enter an age between 0 and 120.'
+    }
+
+    if (patientInfo.gender === '') {
+      nextErrors.gender = 'Please select a gender option.'
     }
 
     setErrors(nextErrors)
@@ -107,6 +173,12 @@ function App() {
   // Validation messages for the symptom form, keyed by field name.
   const [symptomErrors, setSymptomErrors] = useState({})
 
+  // True while the intake is being sent to the backend.
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Result of the last send attempt: { ok, message } or null.
+  const [submitResult, setSubmitResult] = useState(null)
+
   // Runs on every keystroke or selection inside the symptom form.
   function handleSymptomsChange(event) {
     const { name, value } = event.target
@@ -117,8 +189,9 @@ function App() {
     setSymptomErrors((previousErrors) => ({ ...previousErrors, [name]: '' }))
   }
 
-  // Runs when the symptom form is submitted (Continue button).
-  function handleSymptomsSubmit(event) {
+  // Runs when the symptom form is submitted (Continue button). Both forms are
+  // sent to the backend as one patient record.
+  async function handleSymptomsSubmit(event) {
     event.preventDefault()
 
     const nextErrors = {}
@@ -137,7 +210,26 @@ function App() {
       return
     }
 
-    setScreen(AI_FOLLOWUP_SCREEN)
+    setIsSubmitting(true)
+    setSubmitResult(null)
+
+    const payload = buildPatientPayload(patientInfo, symptoms)
+    const result = await sendPatientIntake(payload)
+
+    setIsSubmitting(false)
+    setSubmitResult(result)
+
+    // On success, carry on with the existing flow to the follow-up screen.
+    if (result.ok) {
+      setScreen(AI_FOLLOWUP_SCREEN)
+    }
+  }
+
+  // Leaves the symptom screen. Any message from an earlier send attempt is
+  // cleared, so an old error is not shown again on the way back.
+  function handleSymptomsBack() {
+    setSubmitResult(null)
+    setScreen(PATIENT_INFO_SCREEN)
   }
 
   return (
@@ -263,7 +355,7 @@ function App() {
 
             <div className="intake-form__field">
               <label className="intake-form__label" htmlFor="gender">
-                Gender
+                Gender <span aria-hidden="true">*</span>
               </label>
               <select
                 id="gender"
@@ -271,6 +363,9 @@ function App() {
                 className="intake-form__input intake-form__select"
                 value={patientInfo.gender}
                 onChange={handlePatientInfoChange}
+                required
+                aria-invalid={errors.gender ? 'true' : 'false'}
+                aria-describedby={errors.gender ? 'gender-error' : undefined}
               >
                 <option value="">Select an option</option>
                 <option value="Male">Male</option>
@@ -278,6 +373,11 @@ function App() {
                 <option value="Other">Other</option>
                 <option value="Prefer not to say">Prefer not to say</option>
               </select>
+              {errors.gender && (
+                <p className="intake-form__error" id="gender-error" role="alert">
+                  {errors.gender}
+                </p>
+              )}
             </div>
 
             <div className="intake-form__field intake-form__field--wide">
@@ -325,7 +425,12 @@ function App() {
             consultation. This is a summary of your symptoms only, not a diagnosis.
           </p>
 
-          <form className="intake-form" onSubmit={handleSymptomsSubmit} noValidate>
+          <form
+            className="intake-form"
+            onSubmit={handleSymptomsSubmit}
+            noValidate
+            aria-busy={isSubmitting}
+          >
             <div className="intake-form__field intake-form__field--wide">
               <label className="intake-form__label" htmlFor="mainConcern">
                 What is your main concern? <span aria-hidden="true">*</span>
@@ -423,16 +528,37 @@ function App() {
               )}
             </div>
 
+            {isSubmitting && (
+              <div className="intake-form__field intake-form__field--wide">
+                <p className="intake-form__hint" role="status">
+                  Sending your intake to the clinic, please wait...
+                </p>
+              </div>
+            )}
+
+            {submitResult && !submitResult.ok && (
+              <div className="intake-form__field intake-form__field--wide">
+                <p className="intake-form__error" role="alert">
+                  {submitResult.message}
+                </p>
+              </div>
+            )}
+
             <div className="intake-form__buttons">
               <button
                 type="button"
                 className="intake-welcome__cta intake-welcome__cta--secondary"
-                onClick={() => setScreen(PATIENT_INFO_SCREEN)}
+                onClick={handleSymptomsBack}
+                disabled={isSubmitting}
               >
                 Back
               </button>
-              <button type="submit" className="intake-welcome__cta">
-                Continue
+              <button
+                type="submit"
+                className="intake-welcome__cta"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending your intake...' : 'Continue'}
               </button>
             </div>
           </form>
@@ -451,6 +577,13 @@ function App() {
             This screen is a placeholder for now. Follow-up questions based on the
             information you provided will appear here in a later step.
           </p>
+
+          {submitResult && submitResult.ok && (
+            <p className="intake-welcome__hint" role="status">
+              {submitResult.message} Your care team can review the information you
+              provided before the consultation.
+            </p>
+          )}
 
           <section className="intake-summary" aria-labelledby="summary-heading">
             <h2 className="intake-summary__heading" id="summary-heading">
